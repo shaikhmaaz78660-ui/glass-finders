@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glass compatibility finder</title>
+<style>
+  :root{--bg:#f2efe8;--card:#fff;--line:#e3dfd4;--ink:#1f1f1c;--mut:#6f6d64;--green:#e6efe2;--green-ink:#46694a;--btn:#6b8f63;--terra:#c26f4e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:440px;margin:0 auto;padding:18px 20px 60px}
+  .hero{position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 24px 28px;overflow:hidden}
+  .hero::before{content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;background:var(--green)}
+  .tag{position:relative;display:inline-block;background:var(--green);color:var(--green-ink);font-size:13px;font-weight:800;letter-spacing:.12em;padding:8px 16px;border-radius:999px}
+  .hero h1{position:relative;margin:18px 0 12px;font-size:44px;line-height:1.02;font-weight:800;letter-spacing:-.02em}
+  .hero p{position:relative;margin:0;color:var(--mut);font-size:19px;line-height:1.4}
+  .label{margin:30px 4px 10px;font-weight:700;font-size:17px}
+  .search{background:#fff;border:1.5px solid var(--line);border-radius:999px;display:flex;align-items:center;padding:0 22px;height:58px}
+  .search input{flex:1;border:0;outline:none;background:transparent;font:inherit;font-size:18px;color:var(--ink)}
+  .search input::placeholder{color:#b1ab9b}
+  .search:focus-within{border-color:var(--btn);box-shadow:0 0 0 4px rgba(107,143,99,.15)}
+  .help{margin:12px 6px 0;color:var(--mut);font-size:14px;line-height:1.45}
+  .sep{height:1px;background:var(--line);margin:30px 0 26px}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .head h2{margin:0;font-size:21px;font-weight:800}
+  .group{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 20px 18px;margin-bottom:16px}
+  .badge{display:inline-block;background:var(--terra);color:#fff;font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px}
+  .models{margin:14px 0 14px;font-size:17px;font-weight:700;line-height:1.55;word-break:break-word}
+  mark{background:#f4e6a6;color:inherit;border-radius:4px;padding:0 2px}
+  .src{color:var(--mut);font-size:14px;line-height:1.4}
+  .none{background:#fff;border:1px dashed #cbc6b6;border-radius:16px;padding:18px;color:var(--mut);font-size:15px}
+  .found{border-color:var(--btn);box-shadow:0 0 0 3px rgba(107,143,99,.18)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <span class="tag">SHOP TOOL</span>
+    <h1>Glass compatibility finder</h1>
+    <p>Type a phone model — get told exactly which glass to grab.</p>
+  </section>
+
+  <div class="label">Search a glass model</div>
+  <div class="search"><input id="q" type="search" placeholder="e.g. A77, Y76 5G, F13…" autocomplete="off" autofocus></div>
+  <p class="help">Type the exact model code (e.g. A77, Y76 5G) — at least 2 characters. This avoids mixing up similar codes across brands.</p>
+
+  <div id="found"></div>
+
+  <div class="sep"></div>
+
+  <div class="head"><h2 id="allTitle">All compatibility groups</h2></div>
+  <div id="all"></div>
+</div>
+
+<script>
+const BOXES = [{"name": "Box 1", "title": "ESD Anti-Static Tempered Glass", "image": "box1.jpg", "models": "REALME 5/C33/C30S/C30/9i 5G/Y16/Y75S/Y22/Y22S/Y02S/Y35/T1 5G/Y11S/Y12A/Y12S/Y12S 2021/Y15S/Y30 5G/Y20/Y20i/Y20A/Y32/Y20G/Y55 5G/Y21/Y21E/Y21S/Y21T/Y77/Y20T/Y31/Y33T/Y31S 5G/Y21G/Y33S/Y3S 2021/Y51A/Y33E/Y51 2020/Y52 5G/Y52S/Y53S 4G/Y76 5G/Y55S 5G/Y15C/T2X/Y54S/Y74S/Y76S/Y72 5G/Y75 5G/Y01/Y33S 5G/Y02/Y72T/T1X 4G/IQOO Z6/IQOO Z5X/SAM A12/A02S/A02 5G/A03/A03S/A03 CORE/M12/M33/A32 5G/F13/M02/M02S/A77/M32 5G/F12/F02S/OP REALME 5/5i/5S/C3/C11/C12/Y20S/C25/C15/C21Y/C3i/C25S/C25Y/V11 5G/C35/C20A/A8/Y33/A5 2020/A9 2020/A15/A16E/A15S/A16/A16S/A16K/A57 4G/A31/A35/A54S/A53S 5G/A56 5G/A55 5G/A55S/A57/K10 5G/NARZO 10/10A/20/20A/30A/50A/50i/50A PRIME/NOTE 11E/REALME V23/V23i/Q5i/RM 10 5G/NARZO 50 5G/A17/A17K/A77S/A18/Poco M5/A04E/Mi 11Prime/A04/A04S/R-ME 10T/C33 2023/T2X/Y11 2023/Y02A/A78/Y36 4G/Y56/Y35+/A1X/Y11 2023/IQOO Z7i/Y02T/Y27/A58 5G/A2X/Y17S/A38/Y36i/G2/A59 5G/Y28 5G/Y03/Y18/Y18E/Y28S/T3 Lite/Y18i/Y03T/Y37"}, {"name": "Box 2", "title": "MEIBO ESD Anti-Static Big Curved Edge", "image": "box2.jpg", "models": "1+NORD CE 3 LITE/1+NORD N30/OP F23 5G/Y39/Y59/1+NORD N30 SE/R-ME C55/IQOO Z9X/IQOO Z10X/A98 5G/A1/K11X/A58 4G/A79 5G/OP A2/A5/R-ME C67 4G/5G/A60/Y200T/NARZO 60X/NARZO N55/R-ME 11X 5G/R-ME 11 5G/R-ME 12 5G/R-ME V50/V50S/R-ME 12X 5G/R-ME C63 5G/R-ME V60/V60S/R-ME 12 LITE/R-ME C65 4G/5G/R-ME 13 5G/R-ME V60 PRO/NARZO 70X/NARZO N65/Y37 PRO/Y200I/Y58/A3 PRO (India)/A3X/K12X/Y28 4G/OP A80/A3 4G/5G/Y19S/R-ME C75/Y29/R-ME 14X/Y200+/Y300i/T4X/Y300T/R-ME C75X/R-ME P3X/NARZO 80X/A5X/A5i/A5 PRO/R-ME C71/R-ME C73/K13X/T3X 5G/Y38/Y58/Y19S PRO/NARZO 80 LITE 5G/R-ME P3 LITE/Y21D/Y31 5G/Y31 PRO 5G/R-ME P4X/R-ME P3 LITE 4G/5G"}, {"name": "Box 3", "title": "Super X ESD Anti-Static Big Curved Glass", "image": "box3.jpg", "models": "RM NOTE 9 PRO/NOTE 9S/NOTE 9 PRO MAX/NOTE10 PRO/NOTE10 PRO MAX/NOTE11 PRO 5G/NOTE11 PRO+ 5G/NOTE11E PRO/K40/K40 PRO/K40 PRO+/K40S/MI POCO F3/POCO F4 5G/X2/K30S/X3/X3 PRO/M2 PRO/X4 PRO 5G/10T LITE/11T/11T PRO/11X/11X PRO/1+NORD CE 3/1+NORD 3/R-ME GT NEO 5/VI Y78/NOTE 12PRO 4G/VI Y200/Y300/Y200E/T3 5G/IQOO Z9 5G/1+NORD CE4 LITE/RM NOTE13+/NOTE 14 4G/OP RENO 13F 4G/5G/VI Y200 ASIA/R-ME NEO 7X/P3 5G/OP K13/VI V40 LITE/Y400"}, {"name": "Box 4", "title": "OG+ Anti ESD Static Super HD Glass", "image": "box4.jpg", "models": "RM 12 (4G/5G)/RM 13 (4G/5G)/RM 13X/RM NOTE 12R/RM NOTE 13R/POCO M6 (4G)/POCO M6 PLUS/POCO M6 PRO (5G)"}, {"name": "Box 5", "title": "ESD Anti-Static Big Curved Edge", "image": "box5.jpg", "models": "Poco F3 GT (5G)/Poco F4 GT (5G)/K50 Gaming (5G)/Poco X5 Pro/Redmi K40 Gaming (5G)/Poco F5/K40 Gaming Edition/K50 Gaming Edition/Camon 20/Redmi Note 12 Pro (5G)/Note 12 Pro+/Camon 20 Pro/Note 12 Explorer/Note 12 Turbo/Redmi Note 13 (5G)/Note 13 Pro (4G)/Redmi Note 13R Pro/K50G/Poco M6 Pro (4G)/Infinix Note 30 VIP/Infinix GT 40 Pro/Infinix Note 30 Pro/Poco X6 Neo"}, {"name": "Box 6", "title": "SUPERO Tempered Glass", "image": "box6.jpg", "models": "RMi 10A/10X 5G/9A/9C/9I/K23/Mi POCO C3/C31/M5/SAM A12/A02S/A03/A03S/A03 CORE/A04/A04S/F04/M04/A04 CORE/M02S/A23 4G/A025/A032/A035/Vi Y16"}, {"name": "Box 7", "title": "9H Tempered Glass", "image": "box7.jpg", "models": "RIme 13/RIme 12 4G/OP F27/F25 Pro/1+Nord CE 4 Lite/1+Nord 4/RIme 12+/V30 Lite 4G/1+Nord CE 4/Y200E/Y100 4G/OP K12/RIme P1/T3/1+Ace 3V/1+Nord 3/Narzo 70/70 Pro/RIme GT 5/Z9/Hnr 90 Lite/Rno 12F"}, {"name": "Box 8", "title": "OP F19 ESD Edge to Edge Big Curved Glass", "image": "box8.jpg", "models": "OP F19/F19 PRO/F19 PRO PLUS/F17 PRO/F19S/F21 PRO 4G/F21 PRO 5G/F21S PRO/R-ME 7 PRO/X7/R-ME 8/8 PRO/R-ME 9 4G/R-ME V15 5G/R-ME 9 PRO+/R-ME Q2 PRO/R-ME 10 4G/R-ME 11/NARZO 60/REALME 11 4G/Find X5 Lite 5G/OP A95/A95 5G/A94 5G/A74 4G/A78 4G/A94/RENO7 4G/RENO7 5G/RENO7 SE 5G/A96 5G CHINA/A93/RENO6 LITE/RENO 5 LITE/RENO4/RENO 4 5G/RENO4 LITE/RENO 2/RENO 7Z 5G/RENO5 Z/RENO 5F/RENO4 SE/RENO4 F/RENO 6Z/RENO 7 LITE/RENO 8Z 5G/RENO 8T/NARZO 50 PRO 5G/RENO8 4G/RENO8 5G/RENO8 LITE/1+NORD CE2 5G"}, {"name": "Box 9", "title": "Cellink ESD Anti-Static", "image": "box9.jpg", "models": "RLME C65/C67 5G/11 5G/11X 5G/12 5G/12X 5G/NARZO 70X/N65/OP A1 5G/A3 PRO 5G/A58 4G/A60/A79 5G/VI Y58 5G/Y37 PRO/Y38/Y200T/T3X 5G/1+NORD N30/N30SE"}, {"name": "Box 10", "title": "SUPERO Tempered Glass", "image": "box10.jpg", "models": "RLME 6/6i/8/8S/8 PRO 5G/V13/A52/A52S/A54 5G/A72/A74 5G/A92/A94"}, {"name": "Box 11", "title": "ESD Anti-Static Big Curved Edge", "image": "box11.jpg", "models": "1+10R/1+10T/R-ME GT 2 PRO/GT NEO3/1+ACE/1+ACE PRO/VI V27E/POCO F5 PRO/IQOO 7 5G/IQOO 7 (INDIA)/OP K11/NOTE 13 4G/R-ME 14/R-ME P3/R-ME 14T/1+NORD CE 4/Y200 4G/5G/1+NORD 4/1+NORD CE 4 LITE/K12/K50/K50 PRO/POCO X5 PRO"}, {"name": "Box 12", "title": "MEIBO HD++ Tempered Glass", "image": "box12.jpg", "models": "OP F11 PRO/RENO 2Z/2F/R-ME X/VI V15/Y30/Y50/Y50T/Y70S/Y70T/Y51S 5G/Z1 PRO/R-MI NOTE9T/NOTE 9/NOTE9 5G/R-MI10X 4G"}, {"name": "Box 13", "title": "ESD Anti-Static Tempered Glass", "image": "box13.jpg", "models": "A73 5G/M52 5G/M62/M53 5G/A71/RM NOTE 14 5G/Note 10 Pro/T1/Note10 Pro Max/Mi 11X/Mi 11X Pro/T2/Poco X4 Pro/Note 11T/Mi 11T/Mi 11T Pro/Y36 5G/A80/Note 11 Pro/Note 9 Pro/Poco X3/F3/X3 Pro/Mi 10i/M51/Note 9 Pro Max/Note 11Pro+/IQOO Z5/Poco M4 Pro 5G/Poco M2 Pro/S10 lite/Note 11S 5G/Note 11T 5G/Mi10T/Mi 10T Pro/Note 12 Pro 4G/Y36/1+Nord ce3/1+Nord 3/Y77T 5G/Y36/Y78 5G/Y27S/Y100i/IQOO 12 5G/K11/Y200E/R-ME 12+/1+Ace 3V 5G/T3 5G/Narzo 70 Pro/V40SE/Y78T/R-ME P1/Narzo 70/Y100 4G/V30 SE/IQOO Z9/V30 lite 4G/Realme 12 4G/Reno 12F 4G/5G/R-ME 13 4G/F27 5G/Y300/Poco M7 Pro 5G/K13/K12S"}, {"name": "Box 14", "title": "6D+ ESD Anti-Static Tempered Glass", "image": "box14.jpg", "models": "F15/F17/Reno 3/Y73/V20/V20SE/V21E/V23E/Y75 4G/V21E 5G/T1 44W/A73/Y73S/Y71T/T1/Z6 44W"}, {"name": "Box 15", "title": "6D+ ESD Anti-Static Tempered Glass", "image": "box15.jpg", "models": "NARZO N53/R-ME C53/N63/C61/R-ME C51/R-ME NOTE 50/R-ME C63/R-ME NOTE 60/NOTE 60X/F14 5G/Y19/M14 4G/A05S/Y04/Y29S/Y19E"}, {"name": "Box 16", "title": "HD+ ESD Anti-Static", "image": "box16.jpg", "models": "F21Pro/A96 5G/Realme 7 Pro/Reno 7 SE 5G/Re 9/Re 9 Pro+/Realme 8/Realme 8 Pro/1+Nord CE 2 5G/F19/F19S/F19 Pro/F19 Pro+/Reno 7Z 5G/Reno 5F/Realme X7/Reno 6Z/Reno8 Z/Reno 7 5G/Reno 8 Lite/Narzo 50 Pro/F21S Pro/Reno 8/RM Note 10S/F17 Pro/RM Note 10/Note 11 4G/Note 11S/Reno 7A/Reno 5 Lite/Re 9 4G/A93/A74 4G/A95 4G/5G/A94 4G/5G/Reno 6 Lite/Reno 5Z/Reno 4se/Reno 4G/Poco M4 Pro 4G/Reno 8T/M5S/Realme 10 4G/Realme 11 5G/Reno 9A"}, {"name": "Box 17", "title": "6D ESD Anti-Static Edge to Edge", "image": "box17.jpg", "models": "MOTO G60/Camon 16/Camon 16 Pro/SPARK6/HOT 10/HOT 12/HOT 12 PLAY/NOTE8I/X683/HOT 20 PLAY/HOT 12 PLAY NFC/POVA NEO2/NOTE 12i/HOT 20/POVA/POVA 4/HOT 30 PLAY NFC/HOT 30 PLAY (X6835)/MT G60/G40 FUSION/G40/G51 5G"}, {"name": "Box 18", "title": "Power Glass ESD Anti-Static", "image": "box18.jpg", "models": "RM 10C/RM 12C/RM 10 (India)/RM 10 POWER/POCO C40/POCO C55"}, {"name": "Box 19", "title": "ESD Anti-Static Tempered Glass", "image": "box19.jpg", "models": "RM 9/9T/9 POWER/9 PRIME/POCO M2/POCO M3/NOTE 9 (4G) China/VO Y19/Y5S/U20/U3"}, {"name": "Box 20", "title": "Super X ESD Anti-Static Big Curved Glass", "image": "box20.jpg", "models": "R-MI 14C/14R/RM 4A/A3 PRO/POCO C75/POCO C71/RM 5A 4G"}, {"name": "Box 21", "title": "CROWN ESD Big Curved Glass", "image": "box21.jpg", "models": "OP A6X/R-ME 15X/R-ME C85 5G/R-ME NARZO 90X/OP A6X 5G IND/A6X 5G/A6 PRO 5G IND"}, {"name": "Box 22", "title": "OG+ Anti ESD Static Super HD Glass", "image": "box22.jpg", "models": "IQOO 15/IQOO 15 Ultra/IQOO Z11/VO V70 FE/NOTHING PHONE 4A/NOTHING PHONE 4A PRO"}, {"name": "Box 23", "title": "6D ESD Anti-Static Glass Shield", "image": "box23.jpg", "models": "VO V9/Y81/Y83/Y83 PRO/Y81S/Y85/Z1/Z3X/Y89/V9 Youth/X21/OP A3S/A5/F7/REALME 2/C1/1+6"}, {"name": "Box 24", "title": "VO Shelf Label", "image": "box24.jpg", "models": "VO Y17/Y15/Y12/Y11 (2019)/Y3/Y3S/U10/Y12I"}, {"name": "Box 25", "title": "Cellink 6D ESD Anti-Static Glass", "image": "box25.jpg", "models": "VO Y3/Y11/Y12/Y12i/Y15/Y17/U10"}, {"name": "Box 26", "title": "MEIBO ESD Tempered Glass", "image": "box26.jpg", "models": "SAM A31/A32 4G/A33 5G/T2/M22/M32 4G/F22/IQOO Z6 PRO/T1 PRO/Y100/Y100A/A22 4G"}, {"name": "Box 27", "title": "MEIBO ESD Big Curved Edge", "image": "box27.jpg", "models": "1+10R/1+10T/R-ME GT 2 PRO/GT NEO3/1+ACE/1+ACE PRO/VI V27E/POCO F5 PRO/IQOO 7 5G/IQOO 7 (INDIA)/OP K11/NOTE 13 4G/R-ME 14/R-ME P3/R-ME 14T/1+NORD CE 4/Y200 4G/5G/1+NORD 4/1+NORD CE 4 LITE/K12/K50/K50 PRO/POCO X5 PRO"}, {"name": "Box 28", "title": "MEIBO ESD Anti-Static Big Curved Edge", "image": "box28.jpg", "models": "R-ME 10 PRO/NOTE 12 4G/5G/POCO X5/NOTE 12R PRO"}, {"name": "Box 29", "title": "6D ESD Anti-Static Edge to Edge", "image": "box29.jpg", "models": "SAM A53 5G/A52/S20FE/A52 5G/A52S 5G/A51/M31S/S20 FE 5G/S20 FE 2022/S20 LITE"}, {"name": "Box 30", "title": "ESD+ Anti-Static Big Curved Glass", "image": "box30.jpg", "models": "SAM A05/F05/R-MI 13C 4G/5G/POCO C65/R-MI 13R/POCO M6 5G/M05/A05/A06/F06/M06"}, {"name": "Box 31", "title": "HD+ Armor 9H Super Curved Edge", "image": "box31.jpg", "models": "OP F11/A9/A9X/REALME X2 PRO/VO Y19/U20/VO U3/1+7T/RM NOTE 8 PRO"}, {"name": "Box 32", "title": "6D+ ESD Anti-Static Big Shinning Curve", "image": "box32.jpg", "models": "NARZO N53/R-ME C53/N63/C61/R-ME C51/R-ME NOTE 50/R-ME C63/R-ME NOTE 60/NOTE 60X/F14 5G/Y19/M14 4G/A05S/Y04/Y29S/Y19E"}, {"name": "Box 33", "title": "Super X ESD Edge to Edge Big Curved Glass", "image": "box33.jpg", "models": "OP A91/A73 2020/F17/F15/VO S6/G1/V20/V20SE/Y73S/Reno3/Reno3 5G/V21/V21 5G/V21E 4G/SAM A22 4G/SAM M32/VI Y73 4G/F22 4G/M22/V23E/V25E/A33 5G/Y71T/T1 PRO/TI 44W/Y100/IQ00 Z6 PRO/VI T1 4G/V21S"}, {"name": "Box 34", "title": "Super X OVOG ESD Big Curved Glass", "image": "box34.jpg", "models": "OP A74 5G/R-ME8 5G/R-ME7/R-ME6/A52/A92/A72/A72 5G/A73 5G/V13/Q2/NARZO 20 PRO/30/30PRO/A54 5G/A93S 5G/R-ME8S 5G/A93 5G/R-ME Q3I 5G/A53 5G/R-ME Q3 5G/R-ME 9 5G/SAM A11/M11"}, {"name": "Box 35", "title": "Anti-Static Card (Elephant design)", "image": "box35.jpg", "models": "OP RENO 8 PRO 5G/RENO 8 PRO+ 5G/RENO 11F/OP F25/F25 PRO/MOTO G13/G23/G34/G53/RM NOTE 13 PRO (5G)"}, {"name": "Box 36", "title": "ESD Anti-Static Big Curved Edge", "image": "box36.jpg", "models": "1+NORD 2 5G/1+NORD CE 5G/1+NORD 2T/REALME X7 MAX/RENO 6/REALME GT 5G/GT MASTER/RENO 5/REALME GT NEO/1+NORD/1+NORD 3T"}, {"name": "Box 37", "title": "APEX Anti-Static Premium Tempered Glass", "image": "box37.jpg", "models": "OP REALME 6/6S/7 5G/7(ASIA)/7(GLOBAL)/X7 PRO/REALME NARZO 20 PRO/30 5G/30 PRO 5G/OP A52 4G/A72 4G/A92 4G/RENO 2 Z/2F/K7X/XIAOMI POCO M3 PRO 4G/5G/REDMI NOTE 10 5G/REDMI 10/10 PRIME/NOTE 10 5G/NOTE 10T 5G/11 4G (2021)/11SE"}, {"name": "Box 38", "title": "ESD Anti-Static Big Curved Edge", "image": "box38.jpg", "models": "OP A53/A32/A33/A54 4G/Q3S/A55 4G/A36/A96 4G/REALME 9 PRO/K10/A53S/REALME 7i/REALME 8i/REALME 9i/REALME Q5/1+NORD CE 2 LITE/NARZO 50/REALME V25/C17/REALME 6 PRO/X3/X3 SUPER ZOOM/X50 5G/RENO 4Z/K10X/REALME 9 5G/REALME 9 5G SPEED/1+NORD N100/A76/F52/HOT 9/HOT 9 PRO/SPARK 5/5 PRO/7 PRO/SPARK 20C/GO 2024/SMART 8/TECNO POP8/X6525/CAMON 15/16S/17/CAMON 18 PREMIER/G24/HOT 40i/SMART 8 HD/SPARK 20/SMART 8 PLUS/SMART 8 PRO/G04/G24 POWER"}, {"name": "Box 39", "title": "ESD+ Anti-Static Fast Exhaust", "image": "box39.jpg", "models": "RENO 14 PRO/1+NORD CE 5/1+NORD 5"}, {"name": "Box 40", "title": "Max HD+ Lawrence Glass", "image": "box40.jpg", "models": "OP F11 PRO/RENO 2F/RENO 2 Z/K3/REALME NARZO50 PRO/REALME X/VO V15/Y30/Y50/Y51S/Y70T/Z1 PRO/Z5X/NEX S/RM NOTE 9/NOTE9 5G/NOTE 9T/10X 4G/XM POCO F3 GT/SAM A11/M11/MOTO G31/G41/G71 5G/G42/INF S5 PRO"}];
+
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const parts = m => m.split("/").map(s => s.trim()).filter(Boolean);
+BOXES.forEach(b => b.list = parts(b.models));
+
+// Ignore case, spaces, "+", "-" and the word "NORD", so "ce4" or "1+CE4" matches "1+NORD CE 4"
+const norm = s => s.toLowerCase().replace(/nord/g, "").replace(/[^a-z0-9]/g, "");
+const matches = (x, nq) => { const n = norm(x); return n === nq || n.endsWith(nq); };
+
+function card(b, term, extra) {
+  const shown = term
+    ? b.list.map(x => matches(x, term) ? `<mark>${esc(x)}</mark>` : esc(x))
+    : b.list.map(esc);
+  return `<div class="group ${extra||""}">
+    <span class="badge">Stock: ${esc(b.name)}</span>
+    <div class="models">${shown.join(", ")}</div>
+    <div class="src">From ${esc(b.title)} packaging</div>
+  </div>`;
+}
+
+const q = document.getElementById("q");
+const found = document.getElementById("found");
+const all = document.getElementById("all");
+document.getElementById("allTitle").textContent = `All compatibility groups (${BOXES.length})`;
+all.innerHTML = BOXES.map(b => card(b, "")).join("");
+
+let sampleFn = null;
+if (window.claude && window.claude.use) {
+  window.claude.use("sample").then(fn => { sampleFn = fn; render(); }).catch(() => {});
+}
+
+async function askAI() {
+  const raw = q.value.trim();
+  const out = document.getElementById("aiAns");
+  out.innerHTML = '<div class="none">Thinking...</div>';
+  const list = BOXES.map(b => b.name + " (" + b.title + "): " + b.models).join("\n");
+  const prompt = "You help a shop worker choose phone glass. These are the glass boxes the shop has, with the phone models each lists:\n" + list +
+    "\n\nThe phone model is \"" + raw + "\". Reply in this exact format and nothing else:\nUSE: Box N (one matching model name from the box)\nIf no box is a good fit, reply: USE: none, ask the shop owner.\nIf the phone is not in any box, use the box with the most similar screen size and edge type, and add the word (guess) after the box number.";
+  try {
+    const r = await sampleFn(prompt, { modelTier: "default" });
+    out.innerHTML = '<div class="group found"><div class="models" style="white-space:pre-line;font-size:22px">' + esc(r.text) + '</div></div>';
+  } catch (e) {
+    out.innerHTML = '<div class="none">AI is not available right now. Check the glass against the phone manually.</div>';
+  }
+}
+
+function render() {
+  const raw = q.value.trim();
+  const term = norm(raw);
+  if (term.length < 2) { found.innerHTML = ""; return; }
+  const hits = BOXES.filter(b => b.list.some(x => matches(x, term)));
+  if (!hits.length) {
+    if (!sampleFn) {
+      found.innerHTML = `<div class="none">No glass found for "${esc(raw)}". Check the model code and try again.</div>`;
+      return;
+    }
+    found.innerHTML = `<div class="none">No glass found for "${esc(raw)}".</div>
+      <button id="ask" style="padding:12px 18px;font-size:16px;border-radius:8px;border:0;background:#ffd400;cursor:pointer">Ask AI which glass fits ${esc(raw)}</button>
+      <div id="aiAns"></div>`;
+    document.getElementById("ask").onclick = askAI;
+    return;
+  }
+  found.innerHTML = hits.map(b => card(b, term, "found")).join("");
+}
+q.addEventListener("input", render);
+</script>
+</body>
+</html>
